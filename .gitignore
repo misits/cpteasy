@@ -1,0 +1,3 @@
+# Remove custom files from the plugin
+/includes/models/custom/*.php
+/includes/templates/custom/*.php
