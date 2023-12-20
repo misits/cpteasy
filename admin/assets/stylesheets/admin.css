@@ -18,6 +18,11 @@
     margin-bottom: 0.5rem;
 }
 
+#icon_preview.dashicons-before::before {
+    width: 16px;
+    height: 16px;
+}
+
 .tab-content {
     opacity: 0;
 }

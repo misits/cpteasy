@@ -16,7 +16,7 @@
 namespace Cpteasy;
 
 use Cpteasy\admin\AdminServices;
-use Cpteasy\includes\utils\RegisterCpt;
+use Cpteasy\includes\utils\Register;
 use Cpteasy\includes\utils\Size;
 
 // Prevent direct access.
@@ -40,7 +40,7 @@ spl_autoload_register(function ($class) {
 // Register classes.
 $to_register = [
     AdminServices::class,
-    RegisterCpt::class,
+    Register::class,
     Size::class,
 ];
 

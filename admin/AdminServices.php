@@ -2,7 +2,8 @@
 
 namespace Cpteasy\admin;
 
-use Cpteasy\includes\utils\RegisterCpt;
+use Cpteasy\includes\utils\Register;
+use Cpteasy\includes\utils\Icon;
 
 // Prevent direct access.
 defined('ABSPATH') or exit;
@@ -218,7 +219,7 @@ class AdminServices
                                 <td><?php echo esc_html($post_type->name); ?></td>
                                 <td><?php echo esc_html($post_type->label); ?></td>
                                 <td><?php echo esc_html($post_type->labels->singular_name); ?></td>
-                                <?php if (RegisterCpt::has_template($post_type->name)) { ?>
+                                <?php if (Register::has_template($post_type->name)) { ?>
                                     <td><?php echo ($post_type->show_ui && $post_type->publicly_queryable) ? __('Active', 'cpteady') : __('Inactive', 'cpteady'); ?></td>
                                 <?php } else { ?>
                                     <td><?php echo ($post_type->public) ? __('Active', 'cpteady') : __('Inactive', 'cpteady'); ?></td>
@@ -230,7 +231,7 @@ class AdminServices
                                         <button class="delete-post-type button button-small button-tertirary" data-ajax-url="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" data-post-type="<?php echo esc_attr($post_type->name); ?>">
                                             <?= __('Delete', 'cpteasy'); ?>
                                         </button>
-                                        <?php if (!RegisterCpt::has_template($post_type->name)) { ?>
+                                        <?php if (!Register::has_template($post_type->name)) { ?>
                                             <button class="generate-template button button-small button-secondary" data-ajax-url="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" data-post-type="<?php echo esc_attr($post_type->name); ?>">
                                                 <?= __('Add custom template', 'cpteasy'); ?>
                                             </button>
@@ -289,11 +290,23 @@ class AdminServices
                     ?>
                         <div class="field">
                             <label for="<?php echo esc_attr($field_name); ?>"><?php echo esc_html($label); ?>:</label>
-                            <input value="<?php echo $label ?>" type="text" id="<?php echo esc_attr($field_name); ?>" name="<?php echo esc_attr($field_name); ?>" required>
+                            <input placeholder="<?php echo $label ?>" type="text" id="<?php echo esc_attr($field_name); ?>" name="<?php echo esc_attr($field_name); ?>" required>
                         </div>
                     <?php
                     }
                     ?>
+
+                    <!-- Icon Select Menu -->
+                    <div class="field">
+                        <label for="model_icon">Icon: <span id="icon_preview" class="icon-preview"></span></label>
+                        <select id="model_icon" name="model_icon">
+                            <?php foreach (Icon::ICONS as $icon_key => $icon_value) : ?>
+                                <option value="<?php echo esc_attr($icon_key); ?>">
+                                    <?php echo esc_html($icon_value); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
 
                 <?php wp_nonce_field('create_model_nonce', 'create_model_nonce'); ?>
@@ -305,6 +318,19 @@ class AdminServices
 
             <script>
                 jQuery(document).ready(function($) {
+                    // Icon select menu
+                    function updateIconPreview(iconValue) {
+                        $('#icon_preview').attr('class', 'wp-menu-image dashicons-before dashicons-icon-' + iconValue);
+                    }
+
+                    updateIconPreview($('#model_icon').val());
+
+                    // Event listener for select change
+                    $('#model_icon').change(function() {
+                        var selectedIcon = $(this).val();
+                        updateIconPreview(selectedIcon);
+                    });
+
                     $('#create-model-form').submit(function(e) {
                         e.preventDefault();
 

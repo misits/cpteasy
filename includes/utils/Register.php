@@ -8,10 +8,11 @@ defined('ABSPATH') or exit;
 /**
  * Handles custom post type registration and related AJAX actions.
  *
- * @class RegisterCpt
+ * @class Register
  */
-class RegisterCpt
+class Register
 {
+
     /**
      * Registers actions for custom post types and AJAX.
      */
@@ -270,25 +271,25 @@ class RegisterCpt
         $formData = $_POST['formData'];
         $formData = array_column($formData, 'value', 'name');
 
-         // Get correct directory
-         $directory = CPT_MODELS_WP_DIR . '/includes/templates';
-         $custom_directory = CPT_MODELS_WP_DIR . '/includes/templates/custom';
- 
-          // Initialize $file_path
-          $file_path = '';
- 
-          // Check if the file is in the custom directory
-          if (is_file($custom_directory . '/' . $formData['file'])) {
-              $file_path = $custom_directory . '/' . $formData['file'];
-          } elseif (is_file($directory . '/' . $formData['file'])) {
-              // Check if the file is in the main directory
-              $file_path = $directory . '/' . $formData['file'];
-          }
+        // Get correct directory
+        $directory = CPT_MODELS_WP_DIR . '/includes/templates';
+        $custom_directory = CPT_MODELS_WP_DIR . '/includes/templates/custom';
+
+        // Initialize $file_path
+        $file_path = '';
+
+        // Check if the file is in the custom directory
+        if (is_file($custom_directory . '/' . $formData['file'])) {
+            $file_path = $custom_directory . '/' . $formData['file'];
+        } elseif (is_file($directory . '/' . $formData['file'])) {
+            // Check if the file is in the main directory
+            $file_path = $directory . '/' . $formData['file'];
+        }
 
         if (!file_exists($file_path)) {
             echo _("Model does not exist.", 'cpteady');
         }
-       
+
         // Update file content
 
         echo file_put_contents($file_path, stripslashes($formData['file-content'])) !== false ? __('Model saved successfully.', 'cpteady') : __('Unable to save model.', 'cpteady');
@@ -354,7 +355,7 @@ class RegisterCpt
             "hierarchical" => false,
             "rewrite" => ["slug" => sanitize_text_field($formData['model_slug']), "with_front" => false],
             "query_var" => true,
-            "menu_icon" => "dashicons-icon-" . $formData['icon'],
+            "menu_icon" => "dashicons-icon-" . $formData['model_icon'],
             "supports" => ["title", "editor", "thumbnail", "excerpt"],
         ];
     }

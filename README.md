@@ -10,7 +10,7 @@ Cpteasy is a WordPress plugin that simplifies the creation and management of cus
 
 ## Installation
 
-1. Clone the repository: `git clone https://github.com/misits/cpteasy
+1. Clone the repository: `git clone https://github.com/misits/cpteasy`
 2. Upload the `cpteasy` folder to the `/wp-content/plugins/` directory on your WordPress installation.
 3. Activate the plugin through the 'Plugins' screen in WordPress.
 4. Use the Settings -> Cpteasy screen to create and manage custom post types.
