@@ -3,15 +3,10 @@
 namespace Cpteasy\includes\templates;
 
 use Cpteasy\includes\models\Media;
-
-// Get the current post type
-$post_type = get_post_type();
-
-// Create the class name based on the post type
-$instance_class = 'Cpteasy\\includes\\models\\custom\\' . ucfirst($post_type);
+use Cpteasy\includes\models\Post;
 
 // Create an instance of the class
-$model = new $instance_class(get_the_ID());
+$model = Post::new(get_post_type(), get_the_ID());
 
 get_header();
 ?>

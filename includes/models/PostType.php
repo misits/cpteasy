@@ -19,6 +19,17 @@ abstract class PostType
     const TYPE = "post";
 
     /**
+     * Create post from id.
+     * 
+     * @param int $id The post ID.
+     */
+    public static function new(string $type, int $id)
+    {
+        $model = '\\Cpteasy\\includes\\models\\custom\\' . ucfirst($type);
+        return new $model($id);
+    }
+
+    /**
      * PostType constructor.
      *
      * @param int $id The post ID

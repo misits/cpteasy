@@ -48,7 +48,8 @@ Cpteasy is a WordPress plugin that simplifies the creation and management of cus
 
 ## Changelog
 
-### 1.0
+### 1.0.0
+
 - Initial release.
 
 ## Support

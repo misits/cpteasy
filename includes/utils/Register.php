@@ -55,24 +55,30 @@ class Register
 
                 add_filter('template_include', function ($template) use ($post_type) {
                     if (is_singular($post_type)) {
-                        $custom_template = CPTEASY_DIR . "/includes/templates/single-" . $post_type . ".php";
-
-                        if (file_exists($custom_template)) {
-                            return $custom_template;
-                        } else {
-                            return CPTEASY_DIR . "/includes/templates/single.php";
-                        }
+                        return self::get_custom_template($post_type, $template);
                     }
 
                     return $template;
                 });
 
                 $class = 'Cpteasy\includes\models\custom\\' . ucfirst($post_type);
-                $class::register();
+                if (class_exists($class)) {
+                    $class::register();
+                } else {
+                    // Handle error: Class does not exist
+                    error_log("Class {$class} does not exist.");
+                }
             }
         }
     }
 
+    private static function get_custom_template($post_type, $default_template) {
+        $custom_template = CPTEASY_DIR . "/includes/templates/custom/single-" . $post_type . ".php";
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+        return $default_template;
+    }
 
     /**
      * Checks if the custom post type has assets.
@@ -214,9 +220,10 @@ class Register
         // Generate template PHP file content
         $templateContent = '<?php' . PHP_EOL . PHP_EOL;
         $templateContent .= 'namespace Cpteasy\includes\templates\custom;' . PHP_EOL . PHP_EOL;
-        $templateContent .= 'use Cpteasy\includes\models\custom\\' . ucfirst(sanitize_text_field($formData['model_name'])) . ';' . PHP_EOL;
-        $templateContent .= '$model = new ' . ucfirst(sanitize_text_field($formData['model_name'])) . '(get_the_ID());' . PHP_EOL . PHP_EOL;
-        $templateContent .= 'get_header();' . PHP_EOL . PHP_EOL;
+        $templateContent .= 'use Cpteasy\includes\models\Media;' . PHP_EOL;
+        $templateContent .= 'use Cpteasy\includes\models\Post;' . PHP_EOL . PHP_EOL;
+        $templateContent .= '$model = Post::new(get_post_type(), get_the_ID());' . PHP_EOL . PHP_EOL;
+        $templateContent .= 'get_header();' . PHP_EOL;
         $templateContent .= '?>' . PHP_EOL . PHP_EOL;
         $templateContent .= '<section>' . PHP_EOL;
         $templateContent .= '    <h1><?= $model->title() ?></h1>' . PHP_EOL;

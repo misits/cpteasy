@@ -3,7 +3,7 @@
  * Plugin Name: Cpteasy
  * Description: Adds custom post types as php models
  * Plugin URI: https://github.com/misits/cpteasy
- * Version: 1.0
+ * Version: 1.0.0
  * Requires at least: 5.2
  * Requires PHP: 8.0
  * Author: Martin IS IT Services
