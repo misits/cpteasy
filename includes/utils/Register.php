@@ -394,6 +394,11 @@ class Register
             die();
         }
 
+        // Delete in the database
+        global $wpdb;
+        $wpdb->delete($wpdb->prefix . 'posts', ['post_type' => $post_type]);
+
+        // Delete the class file and the template file
         echo unlink($filename) !== false ? __('Model deleted successfully.', 'cpteady') : __('Unable to delete model.', 'cpteady');
         echo unlink($templateFilename) !== false ? __('Template deleted successfully.', 'cpteady') : __('Unable to delete template.', 'cpteady');
 
