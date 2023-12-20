@@ -23,6 +23,10 @@
     height: 16px;
 }
 
+.flex {
+    display: flex;
+}
+
 .tab-content {
     opacity: 0;
 }

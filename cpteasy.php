@@ -23,7 +23,7 @@ use Cpteasy\includes\utils\Size;
 defined( 'ABSPATH' ) or exit;
 
 // Define plugin constants.
-define( 'CPT_MODELS_WP_DIR', plugin_dir_path(__FILE__) );
+define( 'CPTEASY_DIR', plugin_dir_path(__FILE__) );
 
 // Autoload classes.
 spl_autoload_register(function ($class) {

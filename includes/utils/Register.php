@@ -19,6 +19,9 @@ class Register
     public static function register()
     {
         add_action("init", [self::class, "register_cpt"]);
+        if (self::has_assets()) {
+            add_action("wp_enqueue_scripts", [self::class, "register_assets"]);
+        }
         // Register AJAX actions.
         add_action("wp_ajax_create_cpt_models", [self::class, "create_model_action"]);
         add_action("wp_ajax_nopriv_create_cpt_models", [self::class, "create_model_action"]);
@@ -34,6 +37,9 @@ class Register
 
         add_action("wp_ajax_save_file_content", [self::class, "save_model_action"]);
         add_action("wp_ajax_nopriv_save_file_content", [self::class, "save_model_action"]);
+
+        add_action("wp_ajax_generate_cpt_assets", [self::class, "generate_cpt_assets"]);
+        add_action("wp_ajax_nopriv_generate_cpt_assets", [self::class, "generate_cpt_assets"]);
     }
 
     /**
@@ -41,7 +47,7 @@ class Register
      */
     public static function register_cpt()
     {
-        $files = scandir(CPT_MODELS_WP_DIR . '/includes/models/custom');
+        $files = scandir(CPTEASY_DIR . '/includes/models/custom');
 
         foreach ($files as $file) {
             if (strpos($file, '.php') !== false) {
@@ -49,12 +55,12 @@ class Register
 
                 add_filter('template_include', function ($template) use ($post_type) {
                     if (is_singular($post_type)) {
-                        $custom_template = CPT_MODELS_WP_DIR . "/includes/templates/single-" . $post_type . ".php";
+                        $custom_template = CPTEASY_DIR . "/includes/templates/single-" . $post_type . ".php";
 
                         if (file_exists($custom_template)) {
                             return $custom_template;
                         } else {
-                            return CPT_MODELS_WP_DIR . "/includes/templates/single.php";
+                            return CPTEASY_DIR . "/includes/templates/single.php";
                         }
                     }
 
@@ -67,6 +73,94 @@ class Register
         }
     }
 
+
+    /**
+     * Checks if the custom post type has assets.
+     */
+    public static function has_assets()
+    {
+        $assets_dir = CPTEASY_DIR . '/includes/templates/custom/assets';
+
+        // Check if the directory exists
+        if (!file_exists($assets_dir) || !is_dir($assets_dir)) {
+            return false;
+        }
+
+        $files = scandir($assets_dir);
+
+        if (!is_array($files)) {
+            return false;
+        }
+
+        foreach ($files as $file) {
+            if (strpos($file, '.css') !== false || strpos($file, '.js') !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Registers custom css and js files inside /includes/templates/custom/assets
+     */
+    public static function register_assets()
+    {
+        $assets_dir = CPTEASY_DIR . '/includes/templates/custom/assets';
+
+        // Check if the directory exists and is a directory
+        if (!file_exists($assets_dir) || !is_dir($assets_dir)) {
+            return;
+        }
+
+        $files = scandir($assets_dir);
+
+        if (!is_array($files)) {
+            return;
+        }
+
+        foreach ($files as $file) {
+            if (strpos($file, '.css') !== false) {
+                wp_enqueue_style('cpteady-' . str_replace('.css', '', $file), CPT_MODELS_WP_URL . '/includes/templates/custom/assets/' . $file);
+            } elseif (strpos($file, '.js') !== false) {
+                wp_enqueue_script('cpteady-' . str_replace('.js', '', $file), CPT_MODELS_WP_URL . '/includes/templates/custom/assets/' . $file, [], false, true);
+            }
+        }
+    }
+
+
+    /**
+     * Generate custom css and js files inside /includes/templates/custom/assets
+     */
+    public static function generate_cpt_assets()
+    {
+        check_ajax_referer('generate_assets_nonce', 'security');
+
+        $assets_dir = CPTEASY_DIR . '/includes/templates/custom/assets';
+
+        // Generate main.css file
+        $main_css_file = $assets_dir . '/main.css';
+        if (!file_exists($main_css_file)) {
+            if (file_put_contents($main_css_file, "/* Add your custom css here */") === false) {
+                echo __('Unable to create file: ' . $main_css_file . PHP_EOL);
+            }
+        }
+
+        // Generate main.js file
+        $main_js_file = $assets_dir . '/main.js';
+        if (!file_exists($main_js_file)) {
+            if (file_put_contents($main_js_file, "/* Add your custom js here */") === false) {
+                echo __('Unable to create file: ' . $main_js_file . PHP_EOL);
+            }
+        }
+
+        echo __('Assets generated successfully.', 'cpteasy');
+
+        die();
+    }
+
+
     /**
      * Generates custom post type class file.
      */
@@ -78,7 +172,7 @@ class Register
         $formData = $_POST['formData'];
         $formData = array_column($formData, 'value', 'name');
 
-        $filename = CPT_MODELS_WP_DIR . '/includes/models/custom/' . ucfirst(sanitize_text_field($formData['model_name'])) . '.php';
+        $filename = CPTEASY_DIR . '/includes/models/custom/' . ucfirst(sanitize_text_field($formData['model_name'])) . '.php';
 
         if (file_exists($filename)) {
             return __("Model already exists.", 'cpteady');
@@ -112,10 +206,9 @@ class Register
         $phpContent .= '}' . PHP_EOL;
 
         // Save PHP file
-        if (file_put_contents($filename, $phpContent) !== false) {
-            echo __('Custom post type file created successfully.', 'cpteady');
-        } else {
+        if (file_put_contents($filename, $phpContent) === false) {
             echo __('Unable to create custom post type file.', 'cpteady');
+            die();
         }
 
         // Generate template PHP file content
@@ -143,12 +236,13 @@ class Register
         $templateContent .= '<?php get_footer(); ?>' . PHP_EOL;
 
         // Save template PHP file
-        $templateFilename = CPT_MODELS_WP_DIR . '/includes/templates/custom/single-' . sanitize_text_field($formData['model_name']) . '.php';
-        if (file_put_contents($templateFilename, $templateContent) !== false) {
-            echo __('Custom template file created successfully.', 'cpteady');
-        } else {
+        $templateFilename = CPTEASY_DIR . '/includes/templates/custom/single-' . strtolower(sanitize_text_field($formData['model_name'])) . '.php';
+        if (file_put_contents($templateFilename, $templateContent) === false) {
             echo __('Unable to create template file.', 'cpteady');
+            die();
         }
+
+        echo __('Custom post type & template created successfully.', 'cpteady');
 
         die();
     }
@@ -161,7 +255,7 @@ class Register
      */
     public static function has_template($post_type)
     {
-        $filename = CPT_MODELS_WP_DIR . '/includes/templates/custom/single-' . sanitize_text_field($post_type) . '.php';
+        $filename = CPTEASY_DIR . '/includes/templates/custom/single-' . strtolower(sanitize_text_field($post_type)) . '.php';
 
         return file_exists($filename);
     }
@@ -176,7 +270,7 @@ class Register
         // Get post type from AJAX request
         $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : '';
 
-        $filename = CPT_MODELS_WP_DIR . '/includes/templates/custom/single-' . strtolower(sanitize_text_field($post_type)) . '.php';
+        $filename = CPTEASY_DIR . '/includes/templates/custom/single-' . strtolower(sanitize_text_field($post_type)) . '.php';
 
         if (file_exists($filename)) {
             echo __("Template already exists.", 'cpteady');
@@ -227,7 +321,7 @@ class Register
 
         // Get post type from AJAX request
         $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : '';
-        $filename = CPT_MODELS_WP_DIR . '/includes/models/custom/' . ucfirst(sanitize_text_field($post_type)) . '.php';
+        $filename = CPTEASY_DIR . '/includes/models/custom/' . ucfirst(sanitize_text_field($post_type)) . '.php';
 
         // If model is not registered, check if it exists as a class file
         if (!class_exists('Cpteasy\includes\models\custom\\' . ucfirst($post_type))) {
@@ -272,8 +366,9 @@ class Register
         $formData = array_column($formData, 'value', 'name');
 
         // Get correct directory
-        $directory = CPT_MODELS_WP_DIR . '/includes/templates';
-        $custom_directory = CPT_MODELS_WP_DIR . '/includes/templates/custom';
+        $directory = CPTEASY_DIR . '/includes/templates';
+        $custom_directory = CPTEASY_DIR . '/includes/templates/custom';
+        $assets_directory = CPTEASY_DIR . '/includes/templates/custom/assets';
 
         // Initialize $file_path
         $file_path = '';
@@ -284,6 +379,9 @@ class Register
         } elseif (is_file($directory . '/' . $formData['file'])) {
             // Check if the file is in the main directory
             $file_path = $directory . '/' . $formData['file'];
+        } elseif (is_file($assets_directory . '/' . $formData['file'])) {
+            // Check if the file is in the assets directory
+            $file_path = $assets_directory . '/' . $formData['file'];
         }
 
         if (!file_exists($file_path)) {
@@ -306,8 +404,8 @@ class Register
 
         // Get post type from AJAX request
         $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : '';
-        $filename = CPT_MODELS_WP_DIR . '/includes/models/custom/' . ucfirst(sanitize_text_field($post_type)) . '.php';
-        $templateFilename = CPT_MODELS_WP_DIR . '/includes/templates/custom/single-' . sanitize_text_field($post_type) . '.php';
+        $filename = CPTEASY_DIR . '/includes/models/custom/' . ucfirst(sanitize_text_field($post_type)) . '.php';
+        $templateFilename = CPTEASY_DIR . '/includes/templates/custom/single-' . sanitize_text_field($post_type) . '.php';
 
         // If model is not registered, check if it exists as a class file
         if (!class_exists('Cpteasy\includes\models\custom\\' . ucfirst($post_type))) {
@@ -328,7 +426,7 @@ class Register
             "menu_position" => 2,
             "label" => __($formData['model_label'], "cpteasy"),
             "labels" => [
-                "name" => __($formData['model_name'], "cpteasy"),
+                "name" => __($formData['model_label'], "cpteasy"),
                 "singular_name" => __($formData['model_singular_name'], "cpteasy"),
                 "menu_name" => __($formData['model_menu_name'], "cpteasy"),
                 "all_items" => __($formData['model_all_items'], "cpteasy"),

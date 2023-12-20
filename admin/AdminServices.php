@@ -87,6 +87,7 @@ class AdminServices
                     'generate_template' => wp_create_nonce('generate_template_nonce'),
                     'toggle_activation' => wp_create_nonce('toggle_activation_nonce'),
                     'save_file_content' => wp_create_nonce('save_file_content_nonce'),
+                    'generate_assets' => wp_create_nonce('generate_assets_nonce'),
                 ),
             ));
             ?>
@@ -107,11 +108,12 @@ class AdminServices
      */
     public static function render_file_editor()
     {
-        $directory = CPT_MODELS_WP_DIR . '/includes/templates';
-        $custom_directory = CPT_MODELS_WP_DIR . '/includes/templates/custom';
+        $directory = CPTEASY_DIR . '/includes/templates';
+        $custom_directory = CPTEASY_DIR . '/includes/templates/custom';
+        $assets_directory = CPTEASY_DIR . '/includes/templates/custom/assets';
 
         // Get the list of files from both directories
-        $files = array_merge(scandir($directory), scandir($custom_directory));
+        $files = array_merge(scandir($directory), scandir($custom_directory), scandir($assets_directory));
 
         if (!$files) {
             echo '<div class="error"><p>' . esc_html__('Unable to read directory.', 'cpteasy') . '</p></div>';
@@ -129,6 +131,9 @@ class AdminServices
         } elseif (is_file($directory . '/' . $file)) {
             // Check if the file is in the main directory
             $file_path = $directory . '/' . $file;
+        } elseif (is_file($assets_directory . '/' . $file)) {
+            // Check if the file is in the assets directory
+            $file_path = $assets_directory . '/' . $file;
         }
 
         // Check if $file_path is not an empty string before reading the file content
@@ -143,10 +148,10 @@ class AdminServices
 
             <form  id="save-file-content">
                 <input id="file-name" type="hidden" name="file" value="<?php echo esc_attr($file); ?>">
-                <textarea id="file-content" name="file-content"><?php echo $file_content; ?></textarea>
-                <p class="submit">
-                    <input type="submit" class="button button-primary" value="<?php echo esc_attr__('Save Changes', 'cpteasy'); ?>">
-                </p>
+                <textarea id="file-content" name="file-content" data-extension="<?php echo esc_attr(pathinfo($file, PATHINFO_EXTENSION)); ?>"><?php echo $file_content; ?></textarea>
+                    <p class="submit">
+                        <input type="submit" class="button button-primary" value="<?php echo esc_attr__('Save Changes', 'cpteasy'); ?>">
+                    </p>
             </form>
 
 
@@ -179,6 +184,39 @@ class AdminServices
                     }
                     ?>
                 </ul>
+                <p class="collapsible-title"><?= esc_html__('Assets', 'cpteasy'); ?></p>
+                <ul class="collapsible-list">
+                    <?php
+                    // Main directory
+                    foreach ($files as $filename) {
+                        if (is_file($assets_directory . '/' . $filename) && (pathinfo($filename, PATHINFO_EXTENSION) === 'js' || pathinfo($filename, PATHINFO_EXTENSION) === 'css')) {
+                            $file_url = esc_url(add_query_arg(
+                                array(
+                                    'page' => 'cpteasy',
+                                    'file' => esc_attr($filename),
+                                ),
+                                admin_url('options-general.php')
+                            ));
+
+                            // Check if a file is currently selected in the URL
+                            $current_file = isset($_GET['file']) ? sanitize_text_field($_GET['file']) : '';
+
+                            // Add 'active' class to the file if it matches the current file in the URL
+                            $active_class = ($current_file === $filename) ? ' class="active"' : '';
+
+                            // Append the hash fragment to the URL to indicate the active tab
+                            $file_url .= '#tab3';
+
+                            echo '<li class="collapsible-item"><a href="' . $file_url . '"' . $active_class . '>' . esc_html($filename) . '</a></li>';
+                        }
+                    }
+                    ?>
+                </ul>
+                <?php if (!Register::has_assets()) { ?>
+                    <button type="submit" class="create-cpt-assets button button-small button-secondary" data-ajax-url="<?php echo esc_url(admin_url('admin-ajax.php')); ?>">
+                        <?php echo esc_html__('Generate Assets', 'cpteasy'); ?>
+                    </button>
+                <?php } ?>
             </div>
         </div>
     <?php
@@ -277,7 +315,7 @@ class AdminServices
                         'model_menu_name' => __("Menu Name", "cpteasy"),
                         'model_all_items' => __("All Items", "cpteasy"),
                         'model_add_new' => __("Add New", "cpteasy"),
-                        'model_add_new_item' => __("Add New Item", "cpteasy"),
+                        'model_add_new_item' => __("Add new Item", "cpteasy"),
                         'model_edit_item' => __("Edit Item", "cpteasy"),
                         'model_new_item' => __("New Item", "cpteasy"),
                         'model_view_item' => __("View Item", "cpteasy"),
@@ -285,12 +323,28 @@ class AdminServices
                         'model_search_items' => __("Search Items", "cpteasy"),
                     );
 
+                    $placeholder = array(
+                        'model_name' => __("Demo", "cpteasy"),
+                        'model_label' => __("Demos", "cpteasy"),
+                        'model_singular_name' => __("Demo", "cpteasy"),
+                        'model_slug' => __("demos", "cpteasy"),
+                        'model_menu_name' => __("Demos", "cpteasy"),
+                        'model_all_items' => __("All demos", "cpteasy"),
+                        'model_add_new' => __("Add new", "cpteasy"),
+                        'model_add_new_item' => __("Add new demo", "cpteasy"),
+                        'model_edit_item' => __("Edit demo", "cpteasy"),
+                        'model_new_item' => __("New demo", "cpteasy"),
+                        'model_view_item' => __("View demo", "cpteasy"),
+                        'model_view_items' => __("View demos", "cpteasy"),
+                        'model_search_items' => __("Search demo", "cpteasy"),
+                    );
+
                     // HTML form fields
                     foreach ($fields as $field_name => $label) {
                     ?>
                         <div class="field">
                             <label for="<?php echo esc_attr($field_name); ?>"><?php echo esc_html($label); ?>:</label>
-                            <input placeholder="<?php echo $label ?>" type="text" id="<?php echo esc_attr($field_name); ?>" name="<?php echo esc_attr($field_name); ?>" required>
+                            <input value="<?php echo $placeholder[$field_name] ?>" type="text" id="<?php echo esc_attr($field_name); ?>" name="<?php echo esc_attr($field_name); ?>" required>
                         </div>
                     <?php
                     }
@@ -312,51 +366,9 @@ class AdminServices
                 <?php wp_nonce_field('create_model_nonce', 'create_model_nonce'); ?>
 
                 <div class="field field--submit">
-                    <input class="button button-primary button-hero" type="submit" value="Create Model">
+                    <input class="button button-small button-primary button-hero" type="submit" value="Create Model">
                 </div>
             </form>
-
-            <script>
-                jQuery(document).ready(function($) {
-                    // Icon select menu
-                    function updateIconPreview(iconValue) {
-                        $('#icon_preview').attr('class', 'wp-menu-image dashicons-before dashicons-icon-' + iconValue);
-                    }
-
-                    updateIconPreview($('#model_icon').val());
-
-                    // Event listener for select change
-                    $('#model_icon').change(function() {
-                        var selectedIcon = $(this).val();
-                        updateIconPreview(selectedIcon);
-                    });
-
-                    $('#create-model-form').submit(function(e) {
-                        e.preventDefault();
-
-                        // Get form data
-                        var formData = $(this).serialize();
-
-                        $.ajax({
-                            type: 'post',
-                            url: ajaxurl, // WordPress AJAX URL
-                            data: {
-                                action: 'create_cpt_models', // AJAX action name
-                                security: $('#create_model_nonce').val(), // Nonce for security
-                                formData: $('#create-model-form').serializeArray(), // Use serializeArray() to serialize form data
-                            },
-                            success: function(response) {
-                                // Handle the AJAX response
-                                $('#response-message').html(response);
-                            },
-                            error: function(xhr, status, error) {
-                                console.log(xhr.responseText); // Log the responseText for debugging
-                            }
-                        });
-
-                    });
-                });
-            </script>
         </div>
     <?php
     }

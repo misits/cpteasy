@@ -1,3 +1,13 @@
 # Remove custom files from the plugin
+/includes/templates/custom/assets/*.js
+/includes/templates/custom/assets/*.css
 /includes/models/custom/*.php
 /includes/templates/custom/*.php
+
+# node dependency directories
+node_modules/
+
+# Others
+**/.DS_Store
+
+.env
