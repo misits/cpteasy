@@ -218,7 +218,11 @@ class AdminServices
                                 <td><?php echo esc_html($post_type->name); ?></td>
                                 <td><?php echo esc_html($post_type->label); ?></td>
                                 <td><?php echo esc_html($post_type->labels->singular_name); ?></td>
-                                <td><?php echo $post_type->public ? __('Active', 'cpteady') : __('Inactive', 'cpteady'); ?></td>
+                                <?php if (RegisterCpt::has_template($post_type->name)) { ?>
+                                    <td><?php echo ($post_type->show_ui && $post_type->publicly_queryable) ? __('Active', 'cpteady') : __('Inactive', 'cpteady'); ?></td>
+                                <?php } else { ?>
+                                    <td><?php echo ($post_type->public) ? __('Active', 'cpteady') : __('Inactive', 'cpteady'); ?></td>
+                                <?php } ?> 
                                 <td>
                                     <?php
                                     if (!in_array($post_type->name, ['post', 'page', 'attachment'])) {
