@@ -8,7 +8,7 @@
  * Requires PHP: 8.0
  * Author: Martin IS IT Services
  * Author URI: https://misits.ch
- * License: MIT License
+ * License: GPL v2 or later
  * Text Domain: cpteasy
  * Domain Path: /languages
  */
