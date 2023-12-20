@@ -76,6 +76,11 @@ class Register
         $custom_template = CPTEASY_DIR . "/includes/templates/custom/single-" . $post_type . ".php";
         if (file_exists($custom_template)) {
             return $custom_template;
+        } else {
+            $custom_template = CPTEASY_DIR . "/includes/templates/single.php";
+            if (file_exists($custom_template)) {
+                return $custom_template;
+            }
         }
         return $default_template;
     }
@@ -217,39 +222,7 @@ class Register
             die();
         }
 
-        // Generate template PHP file content
-        $templateContent = '<?php' . PHP_EOL . PHP_EOL;
-        $templateContent .= 'namespace Cpteasy\includes\templates\custom;' . PHP_EOL . PHP_EOL;
-        $templateContent .= 'use Cpteasy\includes\models\Media;' . PHP_EOL;
-        $templateContent .= 'use Cpteasy\includes\models\Post;' . PHP_EOL . PHP_EOL;
-        $templateContent .= '$model = Post::new(get_post_type(), get_the_ID());' . PHP_EOL . PHP_EOL;
-        $templateContent .= 'get_header();' . PHP_EOL;
-        $templateContent .= '?>' . PHP_EOL . PHP_EOL;
-        $templateContent .= '<section>' . PHP_EOL;
-        $templateContent .= '    <h1><?= $model->title() ?></h1>' . PHP_EOL;
-        $templateContent .= '    <div><?= $model->content() ?></div>' . PHP_EOL;
-        $templateContent .= '    <?php $model->thumbnail(function (Media $media) { ?>' . PHP_EOL;
-        $templateContent .= '        <figure>' . PHP_EOL;
-        $templateContent .= '            <picture>' . PHP_EOL;
-        $templateContent .= '                <source media="(min-width: 1281px)" srcset="<?= $media->src("image-xl") ?> 1x, <?= $media->src("image-xl-2x") ?> 2x">' . PHP_EOL;
-        $templateContent .= '                <source media="(max-width: 1280px)" srcset="<?= $media->src("image-l") ?> 1x, <?= $media->src("image-l-2x") ?> 2x">' . PHP_EOL;
-        $templateContent .= '                <source media="(max-width: 860px)" srcset="<?= $media->src("image-m") ?> 1x, <?= $media->src("image-m-2x") ?> 2x">' . PHP_EOL;
-        $templateContent .= '                <source media="(max-width: 400px)" srcset="<?= $media->src("image-s") ?> 1x, <?= $media->src("image-s-2x") ?> 2x">' . PHP_EOL;
-        $templateContent .= '                <img srcset="<?= $media->src("image-l") ?> 1280w, <?= $media->src("image-xl") ?> 1920w" src="<?= $media->src("image-xl") ?>" alt="<?= $media->alt() ?>">' . PHP_EOL;
-        $templateContent .= '            </picture>' . PHP_EOL;
-        $templateContent .= '        </figure>' . PHP_EOL;
-        $templateContent .= '    <?php }); ?>' . PHP_EOL;
-        $templateContent .= '</section>' . PHP_EOL . PHP_EOL;
-        $templateContent .= '<?php get_footer(); ?>' . PHP_EOL;
-
-        // Save template PHP file
-        $templateFilename = CPTEASY_DIR . '/includes/templates/custom/single-' . strtolower(sanitize_text_field($formData['model_name'])) . '.php';
-        if (file_put_contents($templateFilename, $templateContent) === false) {
-            echo __('Unable to create template file.', 'cpteady');
-            die();
-        }
-
-        echo __('Custom post type & template created successfully.', 'cpteady');
+        echo __('Custom post type created successfully.', 'cpteady');
 
         die();
     }
@@ -285,32 +258,33 @@ class Register
         }
 
         // Generate template PHP file content
-        $phpContent = '<?php' . PHP_EOL . PHP_EOL;
-        $phpContent .= 'namespace Cpteasy\includes\templates\custom;' . PHP_EOL . PHP_EOL;
-        $phpContent .= 'use Cpteasy\includes\models\Media;' . PHP_EOL . PHP_EOL;
-        $phpContent .= 'use Cpteasy\includes\models\custom\\' . ucfirst(sanitize_text_field($post_type)) . ';' . PHP_EOL . PHP_EOL;
-        $phpContent .= '$model = new ' . ucfirst(sanitize_text_field($post_type)) . '(get_the_ID());' . PHP_EOL . PHP_EOL;
-        $phpContent .= 'get_header();' . PHP_EOL . PHP_EOL;
-        $phpContent .= '?>' . PHP_EOL . PHP_EOL;
-        $phpContent .= '<section>' . PHP_EOL;
-        $phpContent .= '    <h1><?= $model->title() ?></h1>' . PHP_EOL;
-        $phpContent .= '    <div><?= $model->content() ?></div>' . PHP_EOL;
-        $phpContent .= '    <?php $model->thumbnail(function (Media $media) { ?>' . PHP_EOL;
-        $phpContent .= '        <figure>' . PHP_EOL;
-        $phpContent .= '            <picture>' . PHP_EOL;
-        $phpContent .= '                <source media="(min-width: 1281px)" srcset="<?= $media->src("image-xl") ?> 1x, <?= $media->src("image-xl-2x") ?> 2x">' . PHP_EOL;
-        $phpContent .= '                <source media="(max-width: 1280px)" srcset="<?= $media->src("image-l") ?> 1x, <?= $media->src("image-l-2x") ?> 2x">' . PHP_EOL;
-        $phpContent .= '                <source media="(max-width: 860px)" srcset="<?= $media->src("image-m") ?> 1x, <?= $media->src("image-m-2x") ?> 2x">' . PHP_EOL;
-        $phpContent .= '                <source media="(max-width: 400px)" srcset="<?= $media->src("image-s") ?> 1x, <?= $media->src("image-s-2x") ?> 2x">' . PHP_EOL;
-        $phpContent .= '                <img srcset="<?= $media->src("image-l") ?> 1280w, <?= $media->src("image-xl") ?> 1920w" src="<?= $media->src("image-xl") ?>" alt="<?= $media->alt() ?>">' . PHP_EOL;
-        $phpContent .= '            </picture>' . PHP_EOL;
-        $phpContent .= '        </figure>' . PHP_EOL;
-        $phpContent .= '    <?php }); ?>' . PHP_EOL;
-        $phpContent .= '</section>' . PHP_EOL . PHP_EOL;
-        $phpContent .= '<?php get_footer(); ?>' . PHP_EOL;
+        $templateContent = '<?php' . PHP_EOL . PHP_EOL;
+        $templateContent .= 'namespace Cpteasy\includes\templates\custom;' . PHP_EOL . PHP_EOL;
+        $templateContent .= 'use Cpteasy\includes\models\Media;' . PHP_EOL;
+        $templateContent .= 'use Cpteasy\includes\models\Post;' . PHP_EOL . PHP_EOL;
+        $templateContent .= '$model = Post::new(get_post_type(), get_the_ID());' . PHP_EOL . PHP_EOL;
+        $templateContent .= "/* Edit the bellow template as you wish */" . PHP_EOL . PHP_EOL;
+        $templateContent .= 'get_header();' . PHP_EOL;
+        $templateContent .= '?>' . PHP_EOL . PHP_EOL;
+        $templateContent .= '<section>' . PHP_EOL;
+        $templateContent .= '    <h1><?= $model->title() ?></h1>' . PHP_EOL;
+        $templateContent .= '    <div><?= $model->content() ?></div>' . PHP_EOL;
+        $templateContent .= '    <?php $model->thumbnail(function (Media $media) { ?>' . PHP_EOL;
+        $templateContent .= '        <figure>' . PHP_EOL;
+        $templateContent .= '            <picture>' . PHP_EOL;
+        $templateContent .= '                <source media="(min-width: 1281px)" srcset="<?= $media->src("image-xl") ?> 1x, <?= $media->src("image-xl-2x") ?> 2x">' . PHP_EOL;
+        $templateContent .= '                <source media="(max-width: 1280px)" srcset="<?= $media->src("image-l") ?> 1x, <?= $media->src("image-l-2x") ?> 2x">' . PHP_EOL;
+        $templateContent .= '                <source media="(max-width: 860px)" srcset="<?= $media->src("image-m") ?> 1x, <?= $media->src("image-m-2x") ?> 2x">' . PHP_EOL;
+        $templateContent .= '                <source media="(max-width: 400px)" srcset="<?= $media->src("image-s") ?> 1x, <?= $media->src("image-s-2x") ?> 2x">' . PHP_EOL;
+        $templateContent .= '                <img srcset="<?= $media->src("image-l") ?> 1280w, <?= $media->src("image-xl") ?> 1920w" src="<?= $media->src("image-xl") ?>" alt="<?= $media->alt() ?>">' . PHP_EOL;
+        $templateContent .= '            </picture>' . PHP_EOL;
+        $templateContent .= '        </figure>' . PHP_EOL;
+        $templateContent .= '    <?php }); ?>' . PHP_EOL;
+        $templateContent .= '</section>' . PHP_EOL . PHP_EOL;
+        $templateContent .= '<?php get_footer(); ?>' . PHP_EOL;
 
         // Save PHP file
-        if (file_put_contents($filename, $phpContent) !== false) {
+        if (file_put_contents($filename, $templateContent) !== false) {
             echo __('Custom template created successfully.', 'cpteady');
         } else {
             echo __('Unable to create template file.', 'cpteady');

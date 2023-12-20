@@ -5,8 +5,9 @@ namespace Cpteasy\includes\templates;
 use Cpteasy\includes\models\Media;
 use Cpteasy\includes\models\Post;
 
-// Create an instance of the class
 $model = Post::new(get_post_type(), get_the_ID());
+
+/* Edit the bellow template as you wish */
 
 get_header();
 ?>
