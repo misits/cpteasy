@@ -24,6 +24,7 @@ defined( 'ABSPATH' ) or exit;
 
 // Define plugin constants.
 define( 'CPTEASY_DIR', plugin_dir_path(__FILE__) );
+define( 'CPTEASY_URL', plugin_dir_url(__FILE__) );
 
 // Autoload classes.
 spl_autoload_register(function ($class) {

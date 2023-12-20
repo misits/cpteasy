@@ -122,9 +122,9 @@ class Register
 
         foreach ($files as $file) {
             if (strpos($file, '.css') !== false) {
-                wp_enqueue_style('cpteady-' . str_replace('.css', '', $file), CPT_MODELS_WP_URL . '/includes/templates/custom/assets/' . $file);
+                wp_enqueue_style('cpteady-' . str_replace('.css', '', $file), CPTEASY_URL . '/includes/templates/custom/assets/' . $file);
             } elseif (strpos($file, '.js') !== false) {
-                wp_enqueue_script('cpteady-' . str_replace('.js', '', $file), CPT_MODELS_WP_URL . '/includes/templates/custom/assets/' . $file, [], false, true);
+                wp_enqueue_script('cpteady-' . str_replace('.js', '', $file), CPTEASY_URL . '/includes/templates/custom/assets/' . $file, [], false, true);
             }
         }
     }
